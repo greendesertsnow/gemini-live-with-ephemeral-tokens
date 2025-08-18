@@ -1,19 +1,23 @@
-# Use Node 20 Alpine for smaller image size
-FROM node:20-alpine AS deps
+# Use Node 20 Ubuntu for better compatibility with native modules
+FROM node:20-slim AS deps
 
 # Install dependencies for native modules
-RUN apk add --no-cache libc6-compat python3 make g++
+RUN apt-get update && apt-get install -y \
+    python3 \
+    make \
+    g++ \
+    && rm -rf /var/lib/apt/lists/*
 WORKDIR /app
 
 # Copy dependency files
 COPY package.json package-lock.json ./
 COPY .npmrc ./
 
-# Install dependencies with platform-specific builds
-RUN npm ci --platform=linux --arch=arm64
+# Install dependencies
+RUN npm ci
 
 # Builder stage
-FROM node:20-alpine AS builder
+FROM node:20-slim AS builder
 WORKDIR /app
 
 # Copy dependencies from deps stage
@@ -27,7 +31,7 @@ ENV NODE_ENV=production
 RUN npm run build
 
 # Runner stage
-FROM node:20-alpine AS runner
+FROM node:20-slim AS runner
 WORKDIR /app
 
 ENV NODE_ENV=production
