@@ -1,0 +1,20 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(npm install:*)",
+      "Bash(mkdir:*)",
+      "Bash(npm run dev:*)",
+      "WebFetch(domain:ai.google.dev)",
+      "WebFetch(domain:ai.google.dev)",
+      "WebFetch(domain:ai.google.dev)",
+      "Bash(find:*)",
+      "Bash(npx tsc:*)",
+      "mcp__ide__getDiagnostics",
+      "Bash(npx eslint:*)",
+      "Bash(grep:*)",
+      "Bash(npm run build:*)",
+      "Bash(npx next build:*)"
+    ],
+    "deny": []
+  }
+}
