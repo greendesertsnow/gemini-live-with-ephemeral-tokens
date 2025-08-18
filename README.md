@@ -88,7 +88,6 @@ The Gemini Live API uses token-based pricing:
 
 Pricing varies by model and region. Check the [Google AI pricing page](https://ai.google.dev/pricing) for current rates.
 
- 
 ### Cost Optimization Tips
 
 - **Short Sessions**: Limit conversation length to reduce audio processing costs

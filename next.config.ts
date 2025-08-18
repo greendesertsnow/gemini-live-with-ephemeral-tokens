@@ -1,6 +1,7 @@
 import type { NextConfig } from "next";
 
 const nextConfig: NextConfig = {
+  output: 'standalone',
   webpack: (config, { isServer }) => {
     // Handle canvas module resolution for vega-canvas in browser builds
     if (!isServer) {
