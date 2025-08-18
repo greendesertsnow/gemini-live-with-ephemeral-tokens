@@ -88,15 +88,7 @@ The Gemini Live API uses token-based pricing:
 
 Pricing varies by model and region. Check the [Google AI pricing page](https://ai.google.dev/pricing) for current rates.
 
-### Token Management Costs
-
-| Feature | Resource Usage | Cost Impact |
-|---------|----------------|-------------|
-| **Ephemeral Tokens** | Minimal API calls | ~$0.001/token |
-| **Session Management** | Local processing | Free |
-| **Audit Logging** | Console/file output | Free |
-| **Auto Cleanup** | Background processing | Free |
-
+ 
 ### Cost Optimization Tips
 
 - **Short Sessions**: Limit conversation length to reduce audio processing costs
