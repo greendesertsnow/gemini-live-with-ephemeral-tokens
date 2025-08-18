@@ -1,8 +1,8 @@
 [phases.setup]
-nixPkgs = ['nodejs_20', 'npm-10_x']
+nixPkgs = ['nodejs_20']
 
 [phases.install]
-cmds = ['npm ci --platform=linux --arch=arm64']
+cmds = ['npm ci']
 
 [phases.build]
 cmds = ['npm run build']
