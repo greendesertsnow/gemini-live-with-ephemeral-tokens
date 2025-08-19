@@ -1,5 +1,6 @@
 import { EphemeralTokenManager } from './ephemeral-token-manager';
 import { getSecurityMiddleware } from './security-middleware';
+import { getGlobalEphemeralTokenConfig } from '@/lib/config/ephemeral-token-config';
 import { NextRequest, NextResponse } from 'next/server';
 
 /**
@@ -8,15 +9,40 @@ import { NextRequest, NextResponse } from 'next/server';
  */
 export class SecureTokenService {
   private tokenManager: EphemeralTokenManager;
-  private securityMiddleware = getSecurityMiddleware();
+  private securityMiddleware: ReturnType<typeof getSecurityMiddleware>;
 
   constructor(apiKey: string) {
+    // Load configuration from environment variables
+    const config = getGlobalEphemeralTokenConfig();
+    
+    // Debug logging to verify configuration
+    console.log('[SecureTokenService] Initializing with configuration:', {
+      allowedOrigins: config.security.allowedOrigins,
+      requireHttps: config.security.requireHttps,
+      enableRateLimit: config.security.enableRateLimit,
+      NODE_ENV: process.env.NODE_ENV,
+    });
+    
     this.tokenManager = new EphemeralTokenManager(apiKey, {
-      maxTokensPerSession: 3,
-      defaultExpirationMinutes: 30,
-      defaultUses: 1,
-      cleanupIntervalMinutes: 5,
-      enableAuditLog: true,
+      maxTokensPerSession: config.session.maxTokensPerSession,
+      defaultExpirationMinutes: config.token.defaultExpirationMinutes,
+      defaultUses: config.token.defaultUses,
+      cleanupIntervalMinutes: config.session.cleanupIntervalMinutes,
+      enableAuditLog: config.security.enableAuditLog,
+    });
+
+    // Initialize security middleware with configuration from environment variables
+    this.securityMiddleware = getSecurityMiddleware({
+      enableRateLimit: config.security.enableRateLimit,
+      rateLimitConfig: {
+        windowMs: config.security.rateLimitWindow * 60 * 1000, // Convert minutes to milliseconds
+        maxRequests: config.security.rateLimitMax,
+      },
+      enableRequestValidation: true,
+      enableAuditLogging: config.security.enableAuditLog,
+      allowedOrigins: config.security.allowedOrigins, // This is the key fix!
+      requireHttps: config.security.requireHttps,
+      maxRequestSizeBytes: config.security.maxRequestSizeBytes,
     });
   }
 
@@ -222,4 +248,12 @@ export function getSecureTokenService(): SecureTokenService {
     globalTokenService = new SecureTokenService(apiKey);
   }
   return globalTokenService;
+}
+
+// Reset global service (useful for testing or configuration changes)
+export function resetSecureTokenService(): void {
+  if (globalTokenService) {
+    globalTokenService.shutdown();
+    globalTokenService = null;
+  }
 }

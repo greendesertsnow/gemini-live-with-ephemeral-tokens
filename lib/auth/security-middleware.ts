@@ -174,6 +174,14 @@ export class SecurityMiddleware {
     // Origin validation
     if (this.config.allowedOrigins && this.config.allowedOrigins.length > 0) {
       const origin = request.headers.get('origin');
+      
+      // Debug logging for origin validation
+      console.log('[SecurityMiddleware] Origin validation:', {
+        requestOrigin: origin,
+        allowedOrigins: this.config.allowedOrigins,
+        isAllowed: origin ? this.config.allowedOrigins.includes(origin) : 'no-origin-header'
+      });
+      
       if (origin && !this.config.allowedOrigins.includes(origin)) {
         return {
           valid: false,
@@ -470,8 +478,23 @@ export class SecurityMiddleware {
 let globalSecurityMiddleware: SecurityMiddleware | null = null;
 
 export function getSecurityMiddleware(config?: Partial<SecurityConfig>): SecurityMiddleware {
-  if (!globalSecurityMiddleware) {
+  // If config is provided, always create a new instance (or recreate if config changed)
+  if (config) {
+    if (globalSecurityMiddleware) {
+      globalSecurityMiddleware.shutdown();
+    }
     globalSecurityMiddleware = new SecurityMiddleware(config);
+  } else if (!globalSecurityMiddleware) {
+    // Only create with defaults if no instance exists and no config provided
+    globalSecurityMiddleware = new SecurityMiddleware();
   }
   return globalSecurityMiddleware;
+}
+
+// Reset global security middleware (useful for testing or configuration changes)
+export function resetSecurityMiddleware(): void {
+  if (globalSecurityMiddleware) {
+    globalSecurityMiddleware.shutdown();
+    globalSecurityMiddleware = null;
+  }
 }
