@@ -3,6 +3,8 @@ import { NextRequest, NextResponse } from 'next/server';
 export function middleware(request: NextRequest) {
     // Check for PocketBase auth cookie
     const authCookie = request.cookies.get('pb_auth');
+    // Also check for authorization header (for WebView)
+    const authHeader = request.headers.get('authorization');
     const isLoginPage = request.nextUrl.pathname.startsWith('/login');
     const isApiRoute = request.nextUrl.pathname.startsWith('/api');
     const isStaticFile = request.nextUrl.pathname.startsWith('/_next') ||
@@ -14,8 +16,9 @@ export function middleware(request: NextRequest) {
         return NextResponse.next();
     }
 
-    // Check if user is authenticated (cookie exists and has 'true' value)
-    const isAuthenticated = authCookie && authCookie.value === 'true';
+    // Check if user is authenticated (cookie exists and has 'true' value OR has valid auth header)
+    const isAuthenticated = (authCookie && authCookie.value === 'true') ||
+        (authHeader && authHeader.startsWith('Bearer '));
 
     console.log('Middleware check:', {
         pathname: request.nextUrl.pathname,

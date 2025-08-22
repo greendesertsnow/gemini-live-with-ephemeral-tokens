@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 import { Geist, Geist_Mono } from "next/font/google";
 import "./globals.css";
 import { PocketBaseAuthProvider } from "@/lib/auth/pocketbase-context";
+import { WebViewAuthHandler } from "@/components/auth/webview-auth-handler";
 
 const geistSans = Geist({
   variable: "--font-geist-sans",
@@ -28,6 +29,7 @@ export default function RootLayout({
       <body
         className={`${geistSans.variable} ${geistMono.variable} antialiased`}
       >
+        <WebViewAuthHandler />
         <PocketBaseAuthProvider>
           {children}
         </PocketBaseAuthProvider>
