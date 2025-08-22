@@ -27,7 +27,17 @@ export function PocketBaseAuthProvider({ children }: { children: ReactNode }) {
       setUser(authHelpers.getCurrentUser());
     });
 
-    return unsubscribe;
+    // Listen for custom auth change events (triggered by WebView handler)
+    const handleAuthChange = () => {
+      setUser(authHelpers.getCurrentUser());
+    };
+
+    window.addEventListener('pocketbase-auth-change', handleAuthChange);
+
+    return () => {
+      unsubscribe();
+      window.removeEventListener('pocketbase-auth-change', handleAuthChange);
+    };
   }, []);
 
   const login = async (email: string, password: string) => {

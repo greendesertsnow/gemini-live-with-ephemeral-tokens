@@ -11,7 +11,7 @@ import {
 } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { usePocketBaseAuth } from "@/lib/auth/pocketbase-context";
 
 export function LoginForm({
@@ -21,8 +21,32 @@ export function LoginForm({
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [error, setError] = useState("");
+  const [authStatus, setAuthStatus] = useState("");
   
-  const { login, isLoading } = usePocketBaseAuth();
+  const { login, isLoading, isAuthenticated } = usePocketBaseAuth();
+
+  useEffect(() => {
+    // Check if we're in a WebView environment
+    const isWebView = /WebView|wv/i.test(navigator.userAgent) || 
+                     window.navigator.userAgent.includes('ReactNative');
+    
+    if (isWebView) {
+      setAuthStatus("WebView detected - authentication via token expected");
+    }
+
+    // Check for URL token on mount
+    const urlParams = new URLSearchParams(window.location.search);
+    const token = urlParams.get('token');
+    if (token) {
+      setAuthStatus("Processing authentication token...");
+    }
+  }, []);
+
+  useEffect(() => {
+    if (isAuthenticated) {
+      setAuthStatus("Authentication successful! Redirecting...");
+    }
+  }, [isAuthenticated]);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -52,6 +76,12 @@ export function LoginForm({
               {error && (
                 <div className="text-sm text-destructive bg-destructive/10 p-3 rounded-md">
                   {error}
+                </div>
+              )}
+              
+              {authStatus && (
+                <div className="text-sm text-blue-600 bg-blue-50 p-3 rounded-md">
+                  {authStatus}
                 </div>
               )}
               

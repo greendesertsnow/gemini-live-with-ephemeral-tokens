@@ -1,0 +1,176 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>WebView Authentication Test</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            max-width: 600px;
+            margin: 50px auto;
+            padding: 20px;
+            line-height: 1.6;
+        }
+        .container {
+            background: #f4f4f4;
+            padding: 20px;
+            border-radius: 8px;
+        }
+        button {
+            background: #007cba;
+            color: white;
+            padding: 10px 20px;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+            margin: 5px;
+        }
+        button:hover {
+            background: #005a8b;
+        }
+        .output {
+            background: #fff;
+            padding: 15px;
+            margin: 10px 0;
+            border-radius: 4px;
+            border-left: 4px solid #007cba;
+        }
+        .error {
+            border-left-color: #dc3545;
+            background: #f8d7da;
+        }
+        .success {
+            border-left-color: #28a745;
+            background: #d4edda;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>WebView Authentication Test</h1>
+        <p>This page demonstrates how React Native WebView can authenticate with the Next.js app.</p>
+        
+        <h3>Test Methods:</h3>
+        
+        <button onclick="testPostMessage()">Test PostMessage Authentication</button>
+        <button onclick="testDirectCall()">Test Direct Window Method</button>
+        <button onclick="testAPICall()">Test API Endpoint</button>
+        <button onclick="simulateURLToken()">Test URL Token Method</button>
+        
+        <div id="output"></div>
+        
+        <h3>Instructions for React Native:</h3>
+        <pre><code>
+// Method 1: PostMessage (Recommended)
+webViewRef.current?.postMessage(JSON.stringify({
+  type: 'AUTH_TOKEN',
+  token: 'your-pocketbase-token-here'
+}));
+
+// Method 2: Direct window method call
+webViewRef.current?.injectJavaScript(`
+  window.webViewAuth?.authenticate('your-token-here')
+    .then(result => console.log('Auth result:', result));
+  true;
+`);
+
+// Method 3: URL parameter
+// Load the URL with: https://yourapp.com?token=your-token-here
+        </code></pre>
+    </div>
+
+    <script>
+        function log(message, type = 'info') {
+            const output = document.getElementById('output');
+            const div = document.createElement('div');
+            div.className = `output ${type}`;
+            div.innerHTML = `<strong>${new Date().toLocaleTimeString()}:</strong> ${message}`;
+            output.appendChild(div);
+            output.scrollTop = output.scrollHeight;
+        }
+
+        function testPostMessage() {
+            log('Testing PostMessage authentication...');
+            
+            // Simulate React Native WebView postMessage
+            const message = {
+                type: 'AUTH_TOKEN',
+                token: 'test-token-12345' // Replace with actual token
+            };
+            
+            // Dispatch the message event that our handler listens for
+            window.postMessage(message, '*');
+            log('PostMessage sent. Check console for authentication attempt.', 'info');
+        }
+
+        function testDirectCall() {
+            log('Testing direct window method call...');
+            
+            if (window.webViewAuth) {
+                window.webViewAuth.authenticate('test-token-12345')
+                    .then(result => {
+                        if (result.success) {
+                            log('Direct authentication successful!', 'success');
+                        } else {
+                            log(`Direct authentication failed: ${result.error}`, 'error');
+                        }
+                    })
+                    .catch(error => {
+                        log(`Direct authentication error: ${error.message}`, 'error');
+                    });
+            } else {
+                log('webViewAuth method not available. Make sure you\'re on the main app.', 'error');
+            }
+        }
+
+        async function testAPICall() {
+            log('Testing API endpoint...');
+            
+            try {
+                const response = await fetch('/api/auth/webview-login', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify({
+                        token: 'test-token-12345', // Replace with actual token
+                        source: 'test-page'
+                    })
+                });
+                
+                const result = await response.json();
+                
+                if (response.ok) {
+                    log(`API authentication successful: ${JSON.stringify(result)}`, 'success');
+                } else {
+                    log(`API authentication failed: ${result.error}`, 'error');
+                }
+            } catch (error) {
+                log(`API call error: ${error.message}`, 'error');
+            }
+        }
+
+        function simulateURLToken() {
+            log('Simulating URL token method...');
+            
+            // Add token to URL and reload
+            const url = new URL(window.location);
+            url.searchParams.set('token', 'test-token-12345');
+            
+            log(`Redirecting to: ${url.toString()}`, 'info');
+            setTimeout(() => {
+                window.location.href = url.toString();
+            }, 1000);
+        }
+
+        // Listen for authentication events
+        window.addEventListener('pocketbase-auth-change', () => {
+            log('Authentication state changed!', 'success');
+        });
+
+        // Initial load message
+        log('WebView test page loaded. Ready for authentication testing.');
+    </script>
+</body>
+</html>
