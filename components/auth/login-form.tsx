@@ -31,9 +31,9 @@ export function LoginForm({
     try {
       await login(email, password);
       // Login function now handles the redirect automatically
-    } catch (error: any) {
+    } catch (error: unknown) {
       console.error('Login failed:', error);
-      setError(error?.message || 'Login failed. Please check your credentials.');
+      setError(error instanceof Error ? error.message : 'Login failed. Please check your credentials.');
     }
   };
 
